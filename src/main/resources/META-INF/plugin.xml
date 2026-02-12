@@ -1,0 +1,50 @@
+<idea-plugin>
+    <id>com.inputspark.v2</id>
+    <name>InputSpark (Dev)</name>
+    <vendor email="support@inputspark.com" url="https://github.com/inputspark/inputspark">InputSpark Team</vendor>
+
+    <description><![CDATA[
+    InputSpark is an intelligent input method switcher for IntelliJ IDEA.<br>
+    It automatically switches between English and Chinese input methods based on the context.<br>
+    Features:<br>
+    - Auto switch to English in code<br>
+    - Auto switch to Chinese in comments<br>
+    - Visual feedback with cursor color<br>
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.lang</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- 注册接口服务：serviceInterface 是接口，serviceImplementation 是实现类 -->
+        <applicationService serviceInterface="com.inputspark.services.InputMethodSwitcher"
+                           serviceImplementation="com.inputspark.services.impl.InputMethodServiceImpl"/>
+        <applicationService serviceInterface="com.inputspark.services.ContextAnalyzer"
+                           serviceImplementation="com.inputspark.services.impl.ContextAnalyzerImpl"/>
+        <applicationService serviceInterface="com.inputspark.services.ConfigurationManager"
+                           serviceImplementation="com.inputspark.services.impl.ConfigurationManagerImpl"/>
+        <applicationService serviceInterface="com.inputspark.services.RuleEngine"
+                           serviceImplementation="com.inputspark.services.impl.RuleEngineImpl"/>
+        
+        <applicationConfigurable 
+            parentId="tools" 
+            instance="com.inputspark.ui.InputSparkSettingsConfigurable"
+            id="com.inputspark.ui.InputSparkSettingsConfigurable"
+            displayName="InputSpark"/>
+            
+        <!-- 移除 postStartupActivity，改用 applicationListeners -->
+    </extensions>
+
+    <applicationListeners>
+        <listener class="com.inputspark.ui.InputSparkAppLifecycleListener" topic="com.intellij.ide.AppLifecycleListener"/>
+    </applicationListeners>
+
+    <actions>
+        <action id="com.inputspark.actions.TestToggleAction" 
+                class="com.inputspark.actions.TestToggleAction" 
+                text="Test InputSpark" 
+                description="Check if InputSpark is alive">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
