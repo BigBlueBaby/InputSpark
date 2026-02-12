@@ -25,10 +25,11 @@ InputSpark 是一款为 IntelliJ IDEA 设计的智能输入法切换插件。它
 3. 点击安装并重启 IDE。
 
 ### 方式二：手动安装
-1. 下载本项目最新的 `build/libs/InputSpark-1.0.0.jar` 文件。
-2. 打开 IDEA，进入 `Plugins` 设置页。
-3. 点击齿轮图标，选择 `Install Plugin from Disk...`。
-4. 选择下载的 jar 包进行安装。
+1. 前往本项目的 [Releases 页面](https://github.com/BigBlueBaby/InputSpark/releases) 下载最新发布的 `InputSpark-x.x.x.jar` 文件。
+2. 打开 IDEA，进入 `Settings` -> `Plugins`。
+3. 点击右上角的齿轮图标 ⚙️，选择 `Install Plugin from Disk...`。
+4. 选择下载好的 `.jar` 文件进行安装。
+5. 重启 IDE 即可生效。
 
 ## ⚙️ 配置说明
 
@@ -47,7 +48,7 @@ InputSpark 是一款为 IntelliJ IDEA 设计的智能输入法切换插件。它
 
 1. 克隆项目到本地：
    ```bash
-   git clone https://github.com/your-username/InputSpark.git
+   git clone https://github.com/BigBlueBaby/InputSpark.git
    ```
 2. 使用 IntelliJ IDEA 打开项目。
 3. 等待 Gradle 同步完成（需 JDK 17+）。
