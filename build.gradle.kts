@@ -27,7 +27,7 @@ intellijPlatform {
     pluginConfiguration {
         ideaVersion {
             sinceBuild.set("233")
-            // untilBuild.set("241.*") // Remove upper limit to support latest IDEs
+            untilBuild.set("253.*")
         }
     }
 }
