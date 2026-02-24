@@ -2,6 +2,7 @@ package com.inputspark.ui
 
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.components.service
+import com.inputspark.model.InputMethodType
 import com.inputspark.model.SceneType
 import com.inputspark.services.ConfigurationManager
 import javax.swing.JComponent
@@ -37,7 +38,9 @@ class InputSparkSettingsConfigurable : Configurable {
                component.isDefaultSceneEnabled != (config.sceneConfig[SceneType.DEFAULT.name] ?: true) ||
                component.isCommentSceneEnabled != (config.sceneConfig[SceneType.COMMENT.name] ?: true) ||
                component.isStringLiteralSceneEnabled != (config.sceneConfig[SceneType.STRING_LITERAL.name] ?: false) ||
-               component.isGitCommitSceneEnabled != (config.sceneConfig[SceneType.GIT_COMMIT.name] ?: true)
+               component.isGitCommitSceneEnabled != (config.sceneConfig[SceneType.GIT_COMMIT.name] ?: true) ||
+               component.englishColor != (config.cursorColors[InputMethodType.ENGLISH.name] ?: "#4CAF50") ||
+               component.chineseColor != (config.cursorColors[InputMethodType.CHINESE.name] ?: "#F44336")
     }
 
     override fun apply() {
@@ -53,6 +56,10 @@ class InputSparkSettingsConfigurable : Configurable {
         config.sceneConfig[SceneType.STRING_LITERAL.name] = component.isStringLiteralSceneEnabled
         config.sceneConfig[SceneType.GIT_COMMIT.name] = component.isGitCommitSceneEnabled
         
+        // 更新颜色配置
+        config.cursorColors[InputMethodType.ENGLISH.name] = component.englishColor
+        config.cursorColors[InputMethodType.CHINESE.name] = component.chineseColor
+        
         // configManager.saveConfiguration(config) // 实际上直接修改对象引用即可，IntelliJ 会自动检测状态变化并保存
     }
 
@@ -66,6 +73,13 @@ class InputSparkSettingsConfigurable : Configurable {
         component.isCommentSceneEnabled = config.sceneConfig[SceneType.COMMENT.name] ?: true
         component.isStringLiteralSceneEnabled = config.sceneConfig[SceneType.STRING_LITERAL.name] ?: false
         component.isGitCommitSceneEnabled = config.sceneConfig[SceneType.GIT_COMMIT.name] ?: true
+        
+        // 重置颜色配置
+        component.englishColor = config.cursorColors[InputMethodType.ENGLISH.name] ?: "#4CAF50"
+        component.chineseColor = config.cursorColors[InputMethodType.CHINESE.name] ?: "#F44336"
+        
+        // 更新颜色预览
+        component.updateColorPreviews()
     }
 
     override fun disposeUIResources() {

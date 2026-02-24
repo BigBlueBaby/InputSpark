@@ -11,6 +11,7 @@ import com.intellij.ui.awt.RelativePoint
 import java.awt.Point
 import javax.swing.SwingUtilities
 import com.inputspark.model.ContextType
+import com.inputspark.model.InputMethodType
 import com.inputspark.model.PluginConfig
 import com.inputspark.model.SceneType
 import com.inputspark.services.ConfigurationManager
@@ -108,6 +109,16 @@ class InputSparkCaretListener : CaretListener {
 
         // 6. 只有在真正发生了状态改变时才显示提示
         if (switched) {
+            // 暂时注释掉光标颜色设置，因为API可能不存在
+            /*
+            val inputMethodType = when (contextType) {
+                ContextType.COMMENT_LINE, ContextType.COMMENT_BLOCK, ContextType.GIT_COMMIT_MESSAGE -> {
+                    if (shouldSwitchToChinese(config, contextType)) InputMethodType.CHINESE else InputMethodType.ENGLISH
+                }
+                else -> InputMethodType.ENGLISH
+            }
+            setCursorColor(editor, inputMethodType)
+            */
             showBalloon(editor, tip)
         }
     }
@@ -134,16 +145,20 @@ class InputSparkCaretListener : CaretListener {
     private fun showBalloon(editor: Editor, text: String) {
         try {
             val factory = JBPopupFactory.getInstance()
-            val builder = factory.createHtmlTextBalloonBuilder(text, null, JBColor.GRAY, null)
+            // 根据主题自动切换背景色：亮色主题用白色，暗色主题用指定的深灰色
+            val backgroundColor = JBColor(java.awt.Color(255, 255, 255), java.awt.Color(38, 40, 43))
+            val builder = factory.createHtmlTextBalloonBuilder(text, null, backgroundColor, null)
             builder.setFadeoutTime(1500)
             val balloon = builder.createBalloon()
             val pos = editor.caretModel.visualPosition
             val p = editor.visualPositionToXY(pos)
-            // 向上偏移 20 像素
-            val rp = RelativePoint(editor.contentComponent, Point(p.x, p.y - 20))
+            // 向上偏移 5 像素，使提示框更接近光标正上方
+            val rp = RelativePoint(editor.contentComponent, Point(p.x, p.y - 5))
             balloon.show(rp, Balloon.Position.above)
         } catch (e: Exception) {
             // ignore UI exceptions
         }
     }
+    
+
 }
