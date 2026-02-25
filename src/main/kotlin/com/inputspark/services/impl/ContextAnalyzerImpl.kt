@@ -41,8 +41,11 @@ class ContextAnalyzerImpl : ContextAnalyzer {
             return ContextType.COMMENT_LINE
         }
 
-        return ApplicationManager.getApplication().runReadAction {
-            val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document) ?: return@runReadAction ContextType.CODE_DEFAULT
+        return ApplicationManager.getApplication().runReadAction<ContextType> {
+            val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document)
+            if (psiFile == null) {
+                return@runReadAction ContextType.CODE_DEFAULT
+            }
             
             // 策略1: 优先检查 offset 处的元素
             var element = psiFile.findElementAt(offset)
@@ -70,13 +73,13 @@ class ContextAnalyzerImpl : ContextAnalyzer {
     }
 
     override fun isInComment(element: PsiElement): Boolean {
-        return ApplicationManager.getApplication().runReadAction {
+        return ApplicationManager.getApplication().runReadAction<Boolean> {
             PsiTreeUtil.getParentOfType(element, PsiComment::class.java) != null
         }
     }
 
     override fun isInStringLiteral(element: PsiElement): Boolean {
-        return ApplicationManager.getApplication().runReadAction {
+        return ApplicationManager.getApplication().runReadAction<Boolean> {
             // 简单判断，实际上可能需要针对不同语言进行处理
             PsiTreeUtil.getParentOfType(element, PsiLiteralValue::class.java) != null
         }
