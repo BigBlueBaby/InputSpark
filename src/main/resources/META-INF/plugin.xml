@@ -1,6 +1,6 @@
 <idea-plugin>
-    <id>com.inputspark.v2</id>
-    <name>InputSpark (Dev)</name>
+    <id>com.inputspark</id>
+    <name>InputSpark</name>
     <vendor email="support@inputspark.com" url="https://github.com/inputspark/inputspark">InputSpark Team</vendor>
 
     <description><![CDATA[
