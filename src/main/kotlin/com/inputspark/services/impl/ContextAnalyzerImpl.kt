@@ -1,5 +1,6 @@
 package com.inputspark.services.impl
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.editor.Editor
 import com.intellij.psi.PsiComment
@@ -24,6 +25,11 @@ class ContextAnalyzerImpl : ContextAnalyzer {
         if (isInGitCommit(editor)) {
             return ContextType.GIT_COMMIT_MESSAGE
         }
+        
+        // 检测是否在终端中，如果是，返回终端上下文类型
+        if (isInTerminal(editor)) {
+            return ContextType.TOOL_WINDOW_TERMINAL
+        }
 
         val project = editor.project ?: return ContextType.CODE_DEFAULT
         val document = editor.document
@@ -35,39 +41,45 @@ class ContextAnalyzerImpl : ContextAnalyzer {
             return ContextType.COMMENT_LINE
         }
 
-        val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document) ?: return ContextType.CODE_DEFAULT
-        
-        // 策略1: 优先检查 offset 处的元素
-        var element = psiFile.findElementAt(offset)
-        
-        // 策略2: 如果是 null 或者是空白，且 offset > 0，检查前一个字符
-        // (这是关键：在输入时，光标通常在内容之后，而那个位置可能是空白或 EOF)
-        if (element == null || element is PsiWhiteSpace) {
-            val prevElement = psiFile.findElementAt(offset - 1)
-            if (prevElement != null) {
-                element = prevElement
+        return ApplicationManager.getApplication().runReadAction {
+            val psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document) ?: return@runReadAction ContextType.CODE_DEFAULT
+            
+            // 策略1: 优先检查 offset 处的元素
+            var element = psiFile.findElementAt(offset)
+            
+            // 策略2: 如果是 null 或者是空白，且 offset > 0，检查前一个字符
+            // (这是关键：在输入时，光标通常在内容之后，而那个位置可能是空白或 EOF)
+            if (element == null || element is PsiWhiteSpace) {
+                val prevElement = psiFile.findElementAt(offset - 1)
+                if (prevElement != null) {
+                    element = prevElement
+                }
             }
-        }
-        
-        if (element != null) {
-            if (isInComment(element)) {
-                return ContextType.COMMENT_LINE
+            
+            if (element != null) {
+                if (isInComment(element)) {
+                    return@runReadAction ContextType.COMMENT_LINE
+                }
+                if (isInStringLiteral(element)) {
+                    return@runReadAction ContextType.STRING_LITERAL
+                }
             }
-            if (isInStringLiteral(element)) {
-                return ContextType.STRING_LITERAL
-            }
-        }
 
-        return ContextType.CODE_DEFAULT
+            ContextType.CODE_DEFAULT
+        }
     }
 
     override fun isInComment(element: PsiElement): Boolean {
-        return PsiTreeUtil.getParentOfType(element, PsiComment::class.java) != null
+        return ApplicationManager.getApplication().runReadAction {
+            PsiTreeUtil.getParentOfType(element, PsiComment::class.java) != null
+        }
     }
 
     override fun isInStringLiteral(element: PsiElement): Boolean {
-        // 简单判断，实际上可能需要针对不同语言进行处理
-        return PsiTreeUtil.getParentOfType(element, PsiLiteralValue::class.java) != null
+        return ApplicationManager.getApplication().runReadAction {
+            // 简单判断，实际上可能需要针对不同语言进行处理
+            PsiTreeUtil.getParentOfType(element, PsiLiteralValue::class.java) != null
+        }
     }
 
     override fun isInGitCommit(editor: Editor): Boolean {
@@ -75,6 +87,22 @@ class ContextAnalyzerImpl : ContextAnalyzer {
         // 这里简单通过文件类型判断（需要更严谨的判断）
         val fileType = editor.virtualFile?.fileType?.name
         return fileType == "PLAIN_TEXT" && editor.virtualFile?.name?.contains("COMMIT_EDITMSG") == true
+    }
+    
+    override fun isInTerminal(editor: Editor): Boolean {
+        // 检测是否在终端或控制台中
+        val fileType = editor.virtualFile?.fileType?.name
+        val fileName = editor.virtualFile?.name
+        
+        // 终端文件类型通常是 PLAIN_TEXT 且名称可能包含 terminal 或 console
+        if (fileType == "PLAIN_TEXT") {
+            val lowerFileName = fileName?.lowercase() ?: ""
+            return lowerFileName.contains("terminal") || lowerFileName.contains("console")
+        }
+        
+        // 另外，可以通过编辑器的标题或其他属性来判断
+        val editorTitle = editor.component.name ?: ""
+        return editorTitle.lowercase().contains("terminal") || editorTitle.lowercase().contains("console")
     }
 
     private fun isLineCommentByText(document: com.intellij.openapi.editor.Document, offset: Int): Boolean {

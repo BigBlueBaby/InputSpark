@@ -49,4 +49,13 @@ interface ContextAnalyzer {
      * @return 是否在 Git 提交窗口
      */
     fun isInGitCommit(editor: Editor): Boolean
+    
+    /**
+     * 判断-是否在终端中
+     * 检查当前编辑器是否属于终端或控制台窗口
+     *
+     * @param editor 编辑器实例
+     * @return 是否在终端中
+     */
+    fun isInTerminal(editor: Editor): Boolean
 }

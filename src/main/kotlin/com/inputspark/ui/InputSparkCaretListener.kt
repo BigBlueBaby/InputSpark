@@ -99,6 +99,11 @@ class InputSparkCaretListener : CaretListener {
                     tip = "字符串 - 英文"
                 }
             }
+            ContextType.TOOL_WINDOW_TERMINAL -> {
+                // 在终端中不进行输入法切换，保持用户当前的输入法状态
+                // 这样用户在终端中可以自由使用中英文输入法
+                return
+            }
             else -> { // CODE_DEFAULT
                 if (config.sceneConfig[SceneType.DEFAULT.name] == true) {
                     switched = switcher.switchToEnglish()
