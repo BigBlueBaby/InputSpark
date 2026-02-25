@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.inputspark</id>
     <name>InputSpark</name>
-    <vendor email="support@inputspark.com" url="https://github.com/inputspark/inputspark">InputSpark Team</vendor>
+    <vendor email="support@inputspark.com" url="https://github.com/BigBlueBaby/InputSpark">BigBlueBaby</vendor>
 
     <description><![CDATA[
     InputSpark is an intelligent input method switcher plugin designed for IntelliJ IDEA. It automatically switches between English and Chinese input methods based on the cursor context, such as code, comments, and Git commit messages, helping developers maintain focus while coding.<br>
