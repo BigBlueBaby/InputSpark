@@ -4,12 +4,13 @@
     <vendor email="support@inputspark.com" url="https://github.com/inputspark/inputspark">InputSpark Team</vendor>
 
     <description><![CDATA[
-    InputSpark is an intelligent input method switcher for IntelliJ IDEA.<br>
-    It automatically switches between English and Chinese input methods based on the context.<br>
-    Features:<br>
-    - Auto switch to English in code<br>
-    - Auto switch to Chinese in comments<br>
-    - Visual feedback with cursor color<br>
+    InputSpark 是一款为 IntelliJ IDEA 设计的智能输入法切换插件。<br>
+    它能够根据光标所在的上下文（代码、注释、字符串等）自动切换系统的输入法状态（中/英文）。<br>
+    核心特性：<br>
+    - 代码区域自动切换为英文输入<br>
+    - 注释区域自动切换为中文输入<br>
+    - 光标颜色配置，提供视觉反馈<br>
+    - Git 提交信息自动切换为中文<br>
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
