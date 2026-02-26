@@ -1,0 +1,17 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 键盘图标 -->
+  <rect x="3" y="6" width="10" height="6" rx="1" fill="#AFB1B3"/>
+  
+  <!-- 键盘按键 -->
+  <rect x="4" y="7" width="2" height="1" rx="0.5" fill="#FFFFFF"/>
+  <rect x="7" y="7" width="2" height="1" rx="0.5" fill="#FFFFFF"/>
+  <rect x="10" y="7" width="2" height="1" rx="0.5" fill="#FFFFFF"/>
+  
+  <rect x="4" y="9" width="2" height="1" rx="0.5" fill="#FFFFFF"/>
+  <rect x="7" y="9" width="2" height="1" rx="0.5" fill="#FFFFFF"/>
+  <rect x="10" y="9" width="2" height="1" rx="0.5" fill="#FFFFFF"/>
+  
+  <!-- 闪电图标 -->
+  <path d="M6 12L8 10L10 12L8 14L6 12Z" fill="#AFB1B3"/>
+  <path d="M8 10V8" stroke="#AFB1B3" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

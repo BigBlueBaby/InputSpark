@@ -1,0 +1,24 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="20" cy="20" r="18" fill="#F5F5F5" stroke="#E0E0E0" stroke-width="1"/>
+  
+  <!-- 键盘图标 -->
+  <rect x="8" y="14" width="24" height="16" rx="2" fill="#AFB1B3"/>
+  
+  <!-- 键盘按键 -->
+  <rect x="10" y="16" width="4" height="2" rx="1" fill="#FFFFFF"/>
+  <rect x="16" y="16" width="4" height="2" rx="1" fill="#FFFFFF"/>
+  <rect x="22" y="16" width="4" height="2" rx="1" fill="#FFFFFF"/>
+  
+  <rect x="10" y="19" width="4" height="2" rx="1" fill="#FFFFFF"/>
+  <rect x="16" y="19" width="4" height="2" rx="1" fill="#FFFFFF"/>
+  <rect x="22" y="19" width="4" height="2" rx="1" fill="#FFFFFF"/>
+  
+  <rect x="10" y="22" width="4" height="2" rx="1" fill="#FFFFFF"/>
+  <rect x="16" y="22" width="4" height="2" rx="1" fill="#FFFFFF"/>
+  <rect x="22" y="22" width="4" height="2" rx="1" fill="#FFFFFF"/>
+  
+  <!-- 闪电图标 -->
+  <path d="M16 28L20 24L24 28L20 32L16 28Z" fill="#AFB1B3"/>
+  <path d="M20 24V18" stroke="#AFB1B3" stroke-width="2" stroke-linecap="round"/>
+</svg>

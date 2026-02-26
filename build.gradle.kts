@@ -28,8 +28,6 @@ dependencies {
         intellijIdeaCommunity("2023.3.2")
         instrumentationTools()
     }
-    
-    implementation(kotlin("stdlib")) // 显式声明，有时候能解决冲突警告
 }
 
 intellijPlatform {
