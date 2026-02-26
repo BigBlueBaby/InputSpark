@@ -114,8 +114,7 @@ class InputSparkCaretListener : CaretListener {
 
         // 6. 只有在真正发生了状态改变时才显示提示
         if (switched) {
-            // 暂时注释掉光标颜色设置，因为API可能不存在
-            /*
+            // 根据当前输入法状态设置光标颜色
             val inputMethodType = when (contextType) {
                 ContextType.COMMENT_LINE, ContextType.COMMENT_BLOCK, ContextType.GIT_COMMIT_MESSAGE -> {
                     if (shouldSwitchToChinese(config, contextType)) InputMethodType.CHINESE else InputMethodType.ENGLISH
@@ -123,7 +122,6 @@ class InputSparkCaretListener : CaretListener {
                 else -> InputMethodType.ENGLISH
             }
             setCursorColor(editor, inputMethodType)
-            */
             showBalloon(editor, tip)
         }
     }
@@ -160,6 +158,46 @@ class InputSparkCaretListener : CaretListener {
             // 向上偏移 5 像素，使提示框更接近光标正上方
             val rp = RelativePoint(editor.contentComponent, Point(p.x, p.y - 5))
             balloon.show(rp, Balloon.Position.above)
+        } catch (e: Exception) {
+            // ignore UI exceptions
+        }
+    }
+    
+    /**
+     * 根据输入法类型设置光标颜色
+     */
+    private fun setCursorColor(editor: Editor, inputMethodType: InputMethodType) {
+        try {
+            val configManager = service<ConfigurationManager>()
+            val colorConfig = configManager.getCursorColorConfig()
+            val color = colorConfig[inputMethodType] ?: java.awt.Color.BLACK
+            
+            // 尝试使用不同的API方法设置光标颜色
+            try {
+                // 方法1: 直接设置光标颜色
+                val settings = editor.settings
+                val method = settings.javaClass.getMethod("setCursorColor", java.awt.Color::class.java)
+                method.invoke(settings, color)
+            } catch (e: Exception) {
+                // 方法1失败，尝试方法2
+                try {
+                    // 方法2: 设置自定义光标颜色
+                    val settings = editor.settings
+                    val method = settings.javaClass.getMethod("setCustomCursorColor", java.awt.Color::class.java)
+                    method.invoke(settings, color)
+                } catch (e2: Exception) {
+                    // 方法2失败，尝试方法3
+                    try {
+                        // 方法3: 通过EditorColorsManager设置
+                        val colorsManager = com.intellij.openapi.editor.colors.EditorColorsManager.getInstance()
+                        val scheme = colorsManager.globalScheme
+                        val key = com.intellij.openapi.editor.colors.EditorColors.CARET_COLOR
+                        scheme.setColor(key, color)
+                    } catch (e3: Exception) {
+                        // 所有方法都失败，忽略异常
+                    }
+                }
+            }
         } catch (e: Exception) {
             // ignore UI exceptions
         }
