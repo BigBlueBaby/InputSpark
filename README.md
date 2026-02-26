@@ -21,9 +21,9 @@ InputSpark 是一款为 IntelliJ IDEA 设计的智能输入法切换插件。它
 
 ## 🚀 安装指南
 
-### 方式一：从插件市场安装 (即将发布)
+### 方式一：从插件市场安装
 1. 打开 IntelliJ IDEA，进入 `Settings` -> `Plugins`。
-2. 搜索 `InputSpark`。
+2. 搜索 `InputSpark` 或直接访问 [InputSpark 插件页面](https://plugins.jetbrains.com/plugin/30350-inputspark)。
 3. 点击安装并重启 IDE。
 
 ### 方式二：手动安装
