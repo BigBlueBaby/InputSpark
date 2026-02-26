@@ -1,11 +1,20 @@
+import java.util.Properties
+
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.21"
     id("org.jetbrains.intellij.platform") version "2.1.0"
 }
 
+// 读取本地配置文件
+val localProperties = Properties()
+val localPropertiesFile = file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
 group = "com.inputspark"
-version = "1.1.0"
+version = "1.2.0"
 
 repositories {
     mavenCentral()
@@ -29,6 +38,11 @@ intellijPlatform {
             sinceBuild.set("233")
             untilBuild.set("253.*")
         }
+    }
+    
+    // 插件发布配置
+    publishing {
+        token.set(localProperties.getProperty("JETBRAINS_TOKEN"))
     }
 }
 
