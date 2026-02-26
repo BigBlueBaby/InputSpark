@@ -3,6 +3,8 @@
 InputSpark 是一款为 IntelliJ IDEA 设计的智能输入法切换插件。它能够根据光标所在的上下文（代码、注释、字符串等）自动切换系统的输入法状态（中/英文），让你在编写代码时无需频繁手动切换输入法，保持心流不被打断。
 
 > **注意**：当前版本主要针对 Windows 10/11 系统的微软拼音输入法进行了深度优化。
+<img width="736" height="550" alt="PixPin_2026-02-25_16-05-59" src="https://github.com/user-attachments/assets/2a518a6c-eea6-4184-a140-1c5ef7482711" />
+
 
 ## ✨ 核心特性
 
