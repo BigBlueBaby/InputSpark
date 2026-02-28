@@ -16,6 +16,8 @@ graph TD
     D --> D2[Caret Listener]
     D --> D3[Tool Window Listener]
     D --> D4[Git Commit Listener]
+    D --> D5[App Lifecycle Listener]
+    D --> D6[Focus Tracker]
     
     E --> E1[Windows Imm32 API]
     E --> E2[macOS InputSource API]
@@ -141,6 +143,19 @@ classDiagram
         TOOL_WINDOW_PROJECT
     }
     
+    class CaretState {
+        <<enumeration>>
+        OUTSIDE_IDE
+        IN_COMMENT_LINE
+        IN_COMMENT_BLOCK
+        IN_STRING_LITERAL
+        IN_GIT_COMMIT
+        IN_TOOL_WINDOW
+        IN_CODE
+        VIM_NORMAL_MODE
+        VIM_INSERT_MODE
+    }
+    
     PluginConfig "1" --> "*" CustomRule : contains
     PluginConfig "1" --> "1" SceneType : configures
     CustomRule "*" --> "1" InputMethodType : targets
@@ -206,9 +221,11 @@ interface MacOSInputSource {
 
 ### 7.2 UI监听层 (UI Listener Layer)
 - **EditorListener**: 监听编辑器创建、销毁事件
-- **CaretListener**: 监听光标位置变化事件
+- **CaretListener**: 监听光标位置变化事件，基于状态机模式管理输入法切换
 - **ToolWindowListener**: 监听工具窗口激活事件
 - **GitCommitListener**: 监听Git提交窗口打开事件
+- **AppLifecycleListener**: 监听IDE应用生命周期，处理应用激活/失活事件
+- **FocusTracker**: 追踪编辑器焦点状态，识别"在IDE内但在编辑器外"场景
 
 ### 7.3 系统集成层 (OS Integration Layer)
 - **WindowsImm32Impl**: Windows平台输入法切换实现
@@ -220,6 +237,7 @@ interface MacOSInputSource {
 
 1. **异步处理**: 输入法切换操作在后台线程执行，避免阻塞UI
 2. **缓存机制**: 缓存系统API调用结果，减少重复调用
-3. **事件节流**: 对高频事件（如光标移动）进行节流处理
-4. **内存管理**: 及时释放监听器和回调函数，防止内存泄漏
-5. **懒加载**: 按需初始化系统API接口和配置数据
+3. **事件节流**: 对高频事件（如光标移动）进行节流处理，添加100ms防抖机制
+4. **状态管理**: 采用状态机模式，减少不必要的输入法切换操作
+5. **内存管理**: 及时释放监听器和回调函数，防止内存泄漏
+6. **懒加载**: 按需初始化系统API接口和配置数据

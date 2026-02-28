@@ -4,6 +4,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.JBColor
@@ -14,26 +15,40 @@ import com.inputspark.model.ContextType
 import com.inputspark.model.InputMethodType
 import com.inputspark.model.PluginConfig
 import com.inputspark.model.SceneType
+import com.inputspark.model.CaretState
 import com.inputspark.services.ConfigurationManager
 import com.inputspark.services.ContextAnalyzer
 import com.inputspark.services.InputMethodSwitcher
+import java.util.function.Consumer
 
 /**
  * InputSpark 核心光标监听器
  * 负责处理光标移动事件，分析上下文并触发输入法切换
+ * 基于状态机模式，统一管理光标状态和输入法切换
  *
  * @author 林龙祥
  * @since 2026-02-12
  */
 class InputSparkCaretListener : CaretListener {
-    private var lastContextType: ContextType? = null
+    // 当前光标状态
+    private var currentCaretState: CaretState = CaretState.IN_CODE
+    
+    // 上次处理的行号
     private var lastLine = -1
+    
+    // 上次事件时间戳（防抖）
     private var lastEventTime = 0L
+    
+    // 防抖间隔（毫秒）
+    private companion object {
+        private const val DEBOUNCE_INTERVAL_MS = 50L
+        private const val FOCUS_CHECK_DELAY_MS = 10L
+    }
 
     override fun caretPositionChanged(e: CaretEvent) {
         val now = System.currentTimeMillis()
-        // 简单的防抖，避免极短时间内的微小移动触发多次计算
-        if (now - lastEventTime < 50) return
+        // 防抖：避免极短时间内的微小移动触发多次计算
+        if (now - lastEventTime < DEBOUNCE_INTERVAL_MS) return
         lastEventTime = now
 
         SwingUtilities.invokeLater {
@@ -59,15 +74,14 @@ class InputSparkCaretListener : CaretListener {
         val document = editor.document
         val currentLine = document.getLineNumber(offset)
 
-        // 3. 同行防抖动逻辑 (核心：防止在输入注释时被强制切回)
+        // 3. 同行防抖动逻辑（核心：防止在输入注释时被强制切回）
         if (currentLine == lastLine) {
             // 如果上下文没有改变，直接返回，不做任何操作
-            // 这意味着：如果用户在注释里手动切回了英文，只要上下文判定还是注释，我们就不会再次触发切换中文
-            if (contextType == lastContextType) return
+            if (contextType == getCurrentContextTypeFromState()) return
             
-            // 特殊处理：如果之前是注释，现在判定为代码（可能是输入延迟导致的 PSI 滞后），
+            // 特殊处理：如果之前是注释，现在判定为代码（可能是 PSI 滞后），
             // 但文本上看起来还是注释，则忽略这次变化，保持在注释状态
-            if (lastContextType == ContextType.COMMENT_LINE && contextType == ContextType.CODE_DEFAULT) {
+            if (currentCaretState == CaretState.IN_COMMENT_LINE && contextType == ContextType.CODE_DEFAULT) {
                 if (isLineCommentByText(document, offset)) {
                     return 
                 }
@@ -76,63 +90,104 @@ class InputSparkCaretListener : CaretListener {
         
         lastLine = currentLine
         
-        // 4. 更新状态
-        if (contextType == lastContextType) return
-        lastContextType = contextType
+        // 4. 计算新的光标状态
+        val newCaretState = CaretState.fromContextType(contextType)
         
-        // 5. 执行切换
+        // 5. 状态没有变化则不处理
+        if (newCaretState == currentCaretState) return
+        currentCaretState = newCaretState
+        
+        // 6. 执行输入法切换
+        switchToTargetInputMethod(editor, newCaretState, config)
+    }
+    
+    /**
+     * 从当前状态获取对应的上下文类型
+     */
+    private fun getCurrentContextTypeFromState(): ContextType {
+        return when (currentCaretState) {
+            CaretState.IN_COMMENT_LINE -> ContextType.COMMENT_LINE
+            CaretState.IN_COMMENT_BLOCK -> ContextType.COMMENT_BLOCK
+            CaretState.IN_STRING_LITERAL -> ContextType.STRING_LITERAL
+            CaretState.IN_GIT_COMMIT -> ContextType.GIT_COMMIT_MESSAGE
+            CaretState.IN_TOOL_WINDOW -> ContextType.TOOL_WINDOW_TERMINAL
+            CaretState.IN_CODE, CaretState.VIM_NORMAL_MODE, CaretState.VIM_INSERT_MODE -> ContextType.CODE_DEFAULT
+            CaretState.OUTSIDE_IDE -> ContextType.CODE_DEFAULT
+        }
+    }
+    
+    /**
+     * 切换到目标输入法
+     */
+    private fun switchToTargetInputMethod(editor: Editor, newState: CaretState, config: PluginConfig) {
         val switcher = service<InputMethodSwitcher>()
         var switched = false
         var tip = ""
 
-        when (contextType) {
-            ContextType.COMMENT_LINE, ContextType.COMMENT_BLOCK, ContextType.GIT_COMMIT_MESSAGE -> {
-                if (shouldSwitchToChinese(config, contextType)) {
-                    // 只有当真正发生了切换动作（返回 true）时，才认为需要提示
+        when (newState) {
+            CaretState.IN_COMMENT_LINE, CaretState.IN_COMMENT_BLOCK, CaretState.IN_GIT_COMMIT -> {
+                if (shouldSwitchToChinese(config, newState)) {
                     switched = switcher.switchToChinese()
-                    tip = "注释 - 中文"
+                    tip = getTipText(newState)
                 }
             }
-            ContextType.STRING_LITERAL -> {
+            CaretState.IN_STRING_LITERAL -> {
                 if (config.sceneConfig[SceneType.STRING_LITERAL.name] == true) {
                     switched = switcher.switchToEnglish()
-                    tip = "字符串 - 英文"
+                    tip = getTipText(newState)
                 }
             }
-            ContextType.TOOL_WINDOW_TERMINAL -> {
-                // 在终端中不进行输入法切换，保持用户当前的输入法状态
-                // 这样用户在终端中可以自由使用中英文输入法
+            CaretState.IN_TOOL_WINDOW -> {
+                // 工具窗口中不进行切换
                 return
             }
-            else -> { // CODE_DEFAULT
+            CaretState.IN_CODE, CaretState.VIM_NORMAL_MODE, CaretState.VIM_INSERT_MODE -> {
                 if (config.sceneConfig[SceneType.DEFAULT.name] == true) {
                     switched = switcher.switchToEnglish()
-                    tip = "代码 - 英文"
+                    tip = getTipText(newState)
                 }
+            }
+            CaretState.OUTSIDE_IDE -> {
+                // IDE 外部切换到中文
+                switched = switcher.switchToChinese()
+                tip = "离开 IDE - 中文"
             }
         }
 
-        // 6. 只有在真正发生了状态改变时才显示提示
+        // 7. 只有在真正发生了状态改变时才显示提示和设置光标颜色
         if (switched) {
-            // 根据当前输入法状态设置光标颜色
-            val inputMethodType = when (contextType) {
-                ContextType.COMMENT_LINE, ContextType.COMMENT_BLOCK, ContextType.GIT_COMMIT_MESSAGE -> {
-                    if (shouldSwitchToChinese(config, contextType)) InputMethodType.CHINESE else InputMethodType.ENGLISH
-                }
-                else -> InputMethodType.ENGLISH
-            }
-            setCursorColor(editor, inputMethodType)
+            setCursorColor(editor, newState.targetInputMethod)
             showBalloon(editor, tip)
         }
     }
     
-    private fun shouldSwitchToChinese(config: PluginConfig, type: ContextType): Boolean {
-        if (type == ContextType.GIT_COMMIT_MESSAGE) {
+    /**
+     * 判断是否应该切换到中文输入法
+     */
+    private fun shouldSwitchToChinese(config: PluginConfig, state: CaretState): Boolean {
+        if (state == CaretState.IN_GIT_COMMIT) {
              return config.sceneConfig[SceneType.GIT_COMMIT.name] == true
         }
         return config.sceneConfig[SceneType.COMMENT.name] == true
     }
+    
+    /**
+     * 获取提示文本
+     */
+    private fun getTipText(state: CaretState): String {
+        return when (state) {
+            CaretState.IN_COMMENT_LINE, CaretState.IN_COMMENT_BLOCK -> "注释 - 中文"
+            CaretState.IN_STRING_LITERAL -> "字符串 - 英文"
+            CaretState.IN_GIT_COMMIT -> "提交信息 - 中文"
+            CaretState.IN_CODE, CaretState.VIM_NORMAL_MODE, CaretState.VIM_INSERT_MODE -> "代码 - 英文"
+            CaretState.OUTSIDE_IDE -> "离开 IDE - 中文"
+            CaretState.IN_TOOL_WINDOW -> "工具窗口 - 英文"
+        }
+    }
 
+    /**
+     * 通过文本判断是否为注释行
+     */
     private fun isLineCommentByText(document: com.intellij.openapi.editor.Document, offset: Int): Boolean {
          try {
              if (offset < 0 || offset > document.textLength) return false
@@ -145,6 +200,9 @@ class InputSparkCaretListener : CaretListener {
          } catch(e: Exception) { return false }
     }
 
+    /**
+     * 显示提示气泡
+     */
     private fun showBalloon(editor: Editor, text: String) {
         try {
             val factory = JBPopupFactory.getInstance()
@@ -172,23 +230,23 @@ class InputSparkCaretListener : CaretListener {
             val colorConfig = configManager.getCursorColorConfig()
             val color = colorConfig[inputMethodType] ?: java.awt.Color.BLACK
             
-            // 尝试使用不同的API方法设置光标颜色
+            // 尝试使用不同的 API 方法设置光标颜色
             try {
-                // 方法1: 直接设置光标颜色
+                // 方法 1: 直接设置光标颜色
                 val settings = editor.settings
                 val method = settings.javaClass.getMethod("setCursorColor", java.awt.Color::class.java)
                 method.invoke(settings, color)
             } catch (e: Exception) {
-                // 方法1失败，尝试方法2
+                // 方法 1 失败，尝试方法 2
                 try {
-                    // 方法2: 设置自定义光标颜色
+                    // 方法 2: 设置自定义光标颜色
                     val settings = editor.settings
                     val method = settings.javaClass.getMethod("setCustomCursorColor", java.awt.Color::class.java)
                     method.invoke(settings, color)
                 } catch (e2: Exception) {
-                    // 方法2失败，尝试方法3
+                    // 方法 2 失败，尝试方法 3
                     try {
-                        // 方法3: 通过EditorColorsManager设置
+                        // 方法 3: 通过 EditorColorsManager 设置
                         val colorsManager = com.intellij.openapi.editor.colors.EditorColorsManager.getInstance()
                         val scheme = colorsManager.globalScheme
                         val key = com.intellij.openapi.editor.colors.EditorColors.CARET_COLOR
@@ -203,5 +261,10 @@ class InputSparkCaretListener : CaretListener {
         }
     }
     
-
+    /**
+     * 获取当前光标状态（供外部使用）
+     */
+    fun getCurrentCaretState(): CaretState {
+        return currentCaretState
+    }
 }

@@ -42,20 +42,11 @@ interface ContextAnalyzer {
     fun isInStringLiteral(element: PsiElement): Boolean
     
     /**
-     * 判断-是否在Git提交窗口
+     * 判断-是否在 Git 提交窗口
      * 检查当前编辑器是否属于 Git 提交消息窗口
      *
      * @param editor 编辑器实例
      * @return 是否在 Git 提交窗口
      */
     fun isInGitCommit(editor: Editor): Boolean
-    
-    /**
-     * 判断-是否在终端中
-     * 检查当前编辑器是否属于终端或控制台窗口
-     *
-     * @param editor 编辑器实例
-     * @return 是否在终端中
-     */
-    fun isInTerminal(editor: Editor): Boolean
 }
