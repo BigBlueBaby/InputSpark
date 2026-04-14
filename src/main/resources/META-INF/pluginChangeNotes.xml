@@ -1,4 +1,27 @@
 <change-notes>
+  <release version="1.4.0" date="2026-04-14">
+    <![CDATA[
+      <h2>InputSpark v1.4.0 更新说明</h2>
+      
+      <h3>新功能</h3>
+      <ul>
+        <li>新增输入法切换气泡提示开关，支持在设置页中一键关闭视觉提示</li>
+      </ul>
+      
+      <h3>优化改进</h3>
+      <ul>
+        <li>优化启动期监听逻辑，在构建与无头环境下跳过无关初始化</li>
+        <li>移除 IDE 版本上限限制，提升对后续 IntelliJ IDEA 分支版本的兼容性</li>
+        <li>调整构建流程，禁用 searchable options 生成步骤以提升打包稳定性</li>
+      </ul>
+      
+      <h3>修复问题</h3>
+      <ul>
+        <li>修复鼠标拖拽或 Shift 扩选代码时误触发输入法切换，避免 IDEA 搜索被错误唤起</li>
+      </ul>
+    ]]>
+  </release>
+  
   <release version="1.2.0" date="2026-02-26">
     <![CDATA[
       <h2>InputSpark v1.2.0 更新说明</h2>

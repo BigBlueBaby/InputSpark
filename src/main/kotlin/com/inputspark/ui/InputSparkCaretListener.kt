@@ -4,22 +4,20 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.event.CaretEvent
 import com.intellij.openapi.editor.event.CaretListener
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.popup.Balloon
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.JBColor
 import com.intellij.ui.awt.RelativePoint
 import java.awt.Point
-import javax.swing.SwingUtilities
 import com.inputspark.model.ContextType
+import com.inputspark.model.CaretState
 import com.inputspark.model.InputMethodType
 import com.inputspark.model.PluginConfig
 import com.inputspark.model.SceneType
-import com.inputspark.model.CaretState
 import com.inputspark.services.ConfigurationManager
 import com.inputspark.services.ContextAnalyzer
 import com.inputspark.services.InputMethodSwitcher
-import java.util.function.Consumer
+import javax.swing.SwingUtilities
 
 /**
  * InputSpark 核心光标监听器
@@ -42,7 +40,6 @@ class InputSparkCaretListener : CaretListener {
     // 防抖间隔（毫秒）
     private companion object {
         private const val DEBOUNCE_INTERVAL_MS = 50L
-        private const val FOCUS_CHECK_DELAY_MS = 10L
     }
 
     override fun caretPositionChanged(e: CaretEvent) {
@@ -66,7 +63,11 @@ class InputSparkCaretListener : CaretListener {
         val config = configManager.getConfig()
         if (!config.enabled) return
 
-        // 2. 分析上下文
+        // 2. 鼠标拖拽或 Shift 扩选时会持续触发 caret 变化，此时禁止模拟 Shift 切换输入法，
+        // 否则会干扰 IDE 原生选区交互，甚至触发双 Shift 搜索。
+        if (isSelectionInteraction(editor)) return
+
+        // 3. 分析上下文
         val contextAnalyzer = service<ContextAnalyzer>()
         val offset = editor.caretModel.offset
         val contextType = contextAnalyzer.analyzeContext(editor, offset)
@@ -74,7 +75,7 @@ class InputSparkCaretListener : CaretListener {
         val document = editor.document
         val currentLine = document.getLineNumber(offset)
 
-        // 3. 同行防抖动逻辑（核心：防止在输入注释时被强制切回）
+        // 4. 同行防抖动逻辑（核心：防止在输入注释时被强制切回）
         if (currentLine == lastLine) {
             // 如果上下文没有改变，直接返回，不做任何操作
             if (contextType == getCurrentContextTypeFromState()) return
@@ -90,15 +91,27 @@ class InputSparkCaretListener : CaretListener {
         
         lastLine = currentLine
         
-        // 4. 计算新的光标状态
+        // 5. 计算新的光标状态
         val newCaretState = CaretState.fromContextType(contextType)
         
-        // 5. 状态没有变化则不处理
+        // 6. 状态没有变化则不处理
         if (newCaretState == currentCaretState) return
         currentCaretState = newCaretState
         
-        // 6. 执行输入法切换
+        // 7. 执行输入法切换
         switchToTargetInputMethod(editor, newCaretState, config)
+    }
+
+    /**
+     * 判断当前是否处于选区交互中
+     * 选择文本时用户的关注点是选区本身，而不是输入法状态，因此需要暂停自动切换
+     */
+    private fun isSelectionInteraction(editor: Editor): Boolean {
+        // 选区模型：用于判断当前编辑器是否存在活动选区
+        val selectionModel = editor.selectionModel
+        // 是否存在选区：鼠标拖拽多选、Shift 扩选都会进入该状态
+        val hasSelection = selectionModel.hasSelection()
+        return hasSelection
     }
     
     /**
@@ -157,7 +170,9 @@ class InputSparkCaretListener : CaretListener {
         // 7. 只有在真正发生了状态改变时才显示提示和设置光标颜色
         if (switched) {
             setCursorColor(editor, newState.targetInputMethod)
-            showBalloon(editor, tip)
+            if (config.showBalloonTip) {
+                showBalloon(editor, tip)
+            }
         }
     }
     

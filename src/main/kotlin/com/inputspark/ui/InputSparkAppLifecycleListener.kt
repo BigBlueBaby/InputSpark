@@ -26,6 +26,11 @@ class InputSparkAppLifecycleListener : AppLifecycleListener {
     private var isOutsideIde = false
 
     override fun appFrameCreated(commandLineArgs: MutableList<String>) {
+        val application = ApplicationManager.getApplication()
+        if (application.isHeadlessEnvironment || application.isCommandLine) {
+            return
+        }
+
         // 延迟注册，确保 EditorFactory 已就绪
         SwingUtilities.invokeLater {
             registerGlobalListener()
@@ -35,10 +40,11 @@ class InputSparkAppLifecycleListener : AppLifecycleListener {
     
     private fun registerGlobalListener() {
         val editorFactory = EditorFactory.getInstance()
+        val editors = editorFactory.allEditors.toList()
         
         // 1. 为现有编辑器注册监听器
         // 注意：我们需要为每个编辑器创建一个独立的 Listener 实例，因为 Listener 内部维护了状态（lastContextType）
-        for (editor in editorFactory.allEditors) {
+        for (editor in editors) {
             attachListener(editor)
         }
         

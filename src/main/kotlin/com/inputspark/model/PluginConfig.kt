@@ -38,6 +38,9 @@ class PluginConfig {
     
     /** 插件是否全局启用 */
     var enabled: Boolean = true
+
+    /** 是否显示输入法切换气泡提示 */
+    var showBalloonTip: Boolean = true
     
     /** 创建时间 (时间戳) */
     var createdAt: Long = System.currentTimeMillis()

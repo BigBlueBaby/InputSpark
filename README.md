@@ -1,5 +1,13 @@
 # InputSpark
 
+<p align="center">
+  <img src="src/main/resources/META-INF/pluginIcon.svg" alt="InputSpark 插件图标" width="128" height="128" />
+</p>
+
+<p align="center">
+  <a href="https://plugins.jetbrains.com/plugin/30350-inputspark">JetBrains Marketplace 插件页</a>
+</p>
+
 InputSpark 是一款为 IntelliJ IDEA 设计的智能输入法切换插件。它能够根据光标所在的上下文（代码、注释、字符串等）自动切换系统的输入法状态（中/英文），让你在编写代码时无需频繁手动切换输入法，保持心流不被打断。
 
 > **注意**：当前版本主要针对 Windows 10/11 系统的微软拼音输入法进行了深度优化。
@@ -23,6 +31,7 @@ InputSpark 是一款为 IntelliJ IDEA 设计的智能输入法切换插件。它
     *   **终端窗口防护**：在终端输入 `//` 不会触发中文切换，保持原有输入法状态。
 *   **可视化反馈**：
     *   切换成功时提供轻量的气泡提示（如 "注释 - 中文"），让你对当前状态了如指掌。
+    *   支持在插件设置中一键关闭气泡提示，减少视觉干扰。
 
 ## 🚀 安装指南
 
@@ -43,6 +52,7 @@ InputSpark 是一款为 IntelliJ IDEA 设计的智能输入法切换插件。它
 插件安装后开箱即用，您也可以在 `Settings` -> `Tools` -> `InputSpark` 中进行个性化配置：
 
 *   **启用 InputSpark 插件**：全局开关。
+*   **显示输入法切换气泡提示**：控制切换成功后是否展示气泡反馈。
 *   **场景开关配置**：
     *   `默认场景（代码区域）`：是否在普通代码区强制切回英文。
     *   `注释场景`：是否在注释区切回中文。
@@ -63,6 +73,13 @@ InputSpark 是一款为 IntelliJ IDEA 设计的智能输入法切换插件。它
 5. 运行 `gradle buildPlugin` 构建发行包。
 
 ## 📝 版本历史
+
+### v1.4.0
+*   ✨ **新增气泡提示开关**：支持在设置页中一键关闭输入法切换气泡提示。
+*   🐛 **修复拖拽多选误触发**：鼠标拖拽或 Shift 扩选代码时，不再误触发输入法切换导致 IDEA 搜索弹出。
+*   🔧 **优化启动期监听**：构建与无头环境下跳过编辑器监听初始化，降低启动期副作用。
+*   🚀 **放开 IDE 版本上限**：移除 `until-build` 限制，支持在更新分支的 IntelliJ IDEA 中安装使用。
+*   🛠️ **优化构建流程**：禁用易导致构建失败的 searchable options 生成步骤，提升打包稳定性。
 
 ### v1.3.0
 *   ✨ **新增应用窗口监听**：离开 IDE 时自动切换至中文输入法，返回时恢复英文状态

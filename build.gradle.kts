@@ -14,7 +14,7 @@ if (localPropertiesFile.exists()) {
 }
 
 group = "com.inputspark"
-version = "1.3.0"
+version = "1.4.0"
 
 repositories {
     mavenCentral()
@@ -34,20 +34,18 @@ intellijPlatform {
     pluginConfiguration {
         ideaVersion {
             sinceBuild.set("233")
-            untilBuild.set("253.*")
+            untilBuild.set(provider { null })
         }
         
         // 插件更新日志（用于 JetBrains Marketplace）
         changeNotes = """
-            <h2>Version 1.3.0</h2>
+            <h2>Version 1.4.0</h2>
             <ul>
-                <li>✨ <strong>新增应用窗口监听</strong>：离开 IDE 时自动切换至中文输入法，返回时恢复英文状态</li>
-                <li>✨ <strong>新增编辑器焦点追踪</strong>：智能识别"在 IDE 内但不在编辑器"场景，避免误切换</li>
-                <li>⚡ <strong>优化输入法切换器</strong>：添加 100ms 防抖处理，减少 50% 无效切换操作</li>
-                <li>⚡ <strong>增强注释判断逻辑</strong>：采用多层 PSI 检查，准确率提升 15%</li>
-                <li>🐛 <strong>修复终端窗口问题</strong>：在终端输入 // 不会触发中文切换</li>
-                <li>🔧 <strong>优化状态管理</strong>：引入统一状态机模式，代码更清晰、性能更优</li>
-                <li>🎯 <strong>支持场景扩展</strong>：新增工具窗口、IDE 外部等场景的智能识别</li>
+                <li>✨ <strong>新增气泡提示开关</strong>：支持在设置页中一键关闭输入法切换气泡提示</li>
+                <li>🐛 <strong>修复拖拽多选误触发</strong>：鼠标拖拽或 Shift 扩选代码时，不再误触发输入法切换导致 IDEA 搜索弹出</li>
+                <li>🔧 <strong>优化启动期监听</strong>：构建与无头环境下跳过编辑器监听初始化，降低启动期副作用</li>
+                <li>🚀 <strong>放开 IDE 版本上限</strong>：移除 until-build 限制，支持在更新分支的 IntelliJ IDEA 中安装使用</li>
+                <li>🛠 <strong>优化构建流程</strong>：禁用易导致构建失败的 searchable options 生成步骤，提升打包稳定性</li>
             </ul>
         """.trimIndent()
     }
@@ -65,5 +63,8 @@ tasks {
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
         kotlinOptions.jvmTarget = "17"
+    }
+    named("buildSearchableOptions") {
+        enabled = false
     }
 }

@@ -35,6 +35,7 @@ class InputSparkSettingsConfigurable : Configurable {
         val component = settingsComponent ?: return false
         
         return component.isEnabled != config.enabled ||
+               component.isShowBalloonTipEnabled != config.showBalloonTip ||
                component.isDefaultSceneEnabled != (config.sceneConfig[SceneType.DEFAULT.name] ?: true) ||
                component.isCommentSceneEnabled != (config.sceneConfig[SceneType.COMMENT.name] ?: true) ||
                component.isStringLiteralSceneEnabled != (config.sceneConfig[SceneType.STRING_LITERAL.name] ?: false) ||
@@ -49,6 +50,7 @@ class InputSparkSettingsConfigurable : Configurable {
         val component = settingsComponent ?: return
         
         config.enabled = component.isEnabled
+        config.showBalloonTip = component.isShowBalloonTipEnabled
         
         // 更新场景配置
         config.sceneConfig[SceneType.DEFAULT.name] = component.isDefaultSceneEnabled
@@ -69,6 +71,7 @@ class InputSparkSettingsConfigurable : Configurable {
         val component = settingsComponent ?: return
         
         component.isEnabled = config.enabled
+        component.isShowBalloonTipEnabled = config.showBalloonTip
         component.isDefaultSceneEnabled = config.sceneConfig[SceneType.DEFAULT.name] ?: true
         component.isCommentSceneEnabled = config.sceneConfig[SceneType.COMMENT.name] ?: true
         component.isStringLiteralSceneEnabled = config.sceneConfig[SceneType.STRING_LITERAL.name] ?: false

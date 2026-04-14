@@ -21,6 +21,7 @@ class InputSparkSettingsComponent {
     
     val panel: JPanel
     val enabledCheckBox = JBCheckBox("启用 InputSpark 插件")
+    val showBalloonTipCheckBox = JBCheckBox("显示输入法切换气泡提示")
     val defaultSceneCheckBox = JBCheckBox("默认场景（代码区域）自动切换为英文")
     val commentSceneCheckBox = JBCheckBox("注释场景自动切换为中文")
     val stringLiteralSceneCheckBox = JBCheckBox("字符串字面量场景自动切换")
@@ -46,6 +47,7 @@ class InputSparkSettingsComponent {
         
         panel = FormBuilder.createFormBuilder()
             .addComponent(enabledCheckBox)
+            .addComponent(showBalloonTipCheckBox)
             .addSeparator()
             .addComponent(JBLabel("场景开关配置:"))
             .addComponent(defaultSceneCheckBox)
@@ -115,6 +117,10 @@ class InputSparkSettingsComponent {
     var isDefaultSceneEnabled: Boolean
         get() = defaultSceneCheckBox.isSelected
         set(value) { defaultSceneCheckBox.isSelected = value }
+
+    var isShowBalloonTipEnabled: Boolean
+        get() = showBalloonTipCheckBox.isSelected
+        set(value) { showBalloonTipCheckBox.isSelected = value }
         
     var isCommentSceneEnabled: Boolean
         get() = commentSceneCheckBox.isSelected
