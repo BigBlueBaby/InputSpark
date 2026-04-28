@@ -1,7 +1,9 @@
 package com.inputspark.ui
 
 import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.options.ConfigurationException
 import com.intellij.openapi.components.service
+import com.inputspark.core.windows.InputMethodToggleHotkeyParser
 import com.inputspark.model.InputMethodType
 import com.inputspark.model.SceneType
 import com.inputspark.services.ConfigurationManager
@@ -36,6 +38,7 @@ class InputSparkSettingsConfigurable : Configurable {
         
         return component.isEnabled != config.enabled ||
                component.isShowBalloonTipEnabled != config.showBalloonTip ||
+               component.toggleHotkey.trim() != config.toggleHotkey ||
                component.isDefaultSceneEnabled != (config.sceneConfig[SceneType.DEFAULT.name] ?: true) ||
                component.isCommentSceneEnabled != (config.sceneConfig[SceneType.COMMENT.name] ?: true) ||
                component.isStringLiteralSceneEnabled != (config.sceneConfig[SceneType.STRING_LITERAL.name] ?: false) ||
@@ -48,9 +51,15 @@ class InputSparkSettingsConfigurable : Configurable {
         val configManager = service<ConfigurationManager>()
         val config = configManager.getConfig()
         val component = settingsComponent ?: return
+        val normalizedToggleHotkey = try {
+            InputMethodToggleHotkeyParser.parse(component.toggleHotkey).displayText
+        } catch (ex: IllegalArgumentException) {
+            throw ConfigurationException(ex.message ?: "中英文切换按键配置无效")
+        }
         
         config.enabled = component.isEnabled
         config.showBalloonTip = component.isShowBalloonTipEnabled
+        config.toggleHotkey = normalizedToggleHotkey
         
         // 更新场景配置
         config.sceneConfig[SceneType.DEFAULT.name] = component.isDefaultSceneEnabled
@@ -72,6 +81,7 @@ class InputSparkSettingsConfigurable : Configurable {
         
         component.isEnabled = config.enabled
         component.isShowBalloonTipEnabled = config.showBalloonTip
+        component.toggleHotkey = config.toggleHotkey.ifBlank { InputMethodToggleHotkeyParser.DEFAULT_HOTKEY_TEXT }
         component.isDefaultSceneEnabled = config.sceneConfig[SceneType.DEFAULT.name] ?: true
         component.isCommentSceneEnabled = config.sceneConfig[SceneType.COMMENT.name] ?: true
         component.isStringLiteralSceneEnabled = config.sceneConfig[SceneType.STRING_LITERAL.name] ?: false

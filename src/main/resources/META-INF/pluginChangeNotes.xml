@@ -1,4 +1,23 @@
 <change-notes>
+  <release version="1.5.0" date="2026-04-28">
+    <![CDATA[
+      <h2>InputSpark v1.5.0 更新说明</h2>
+      
+      <h3>新功能</h3>
+      <ul>
+        <li>新增中英文切换按键配置，支持在设置页录入或一键选择单键、组合键与常用切换方案</li>
+        <li>新增输入法切换失败提醒，在右下角提示用户检查切换热键配置</li>
+      </ul>
+      
+      <h3>优化改进</h3>
+      <ul>
+        <li>修复 Ctrl+Space、Shift+Space 等包含 Space 的快捷键录入问题</li>
+        <li>移除仅用于开发阶段的测试菜单动作，收敛最终插件交互</li>
+        <li>统一 README、插件描述与 Marketplace 更新文案，补充热键配置与常用按钮说明</li>
+      </ul>
+    ]]>
+  </release>
+
   <release version="1.4.0" date="2026-04-14">
     <![CDATA[
       <h2>InputSpark v1.4.0 更新说明</h2>

@@ -14,7 +14,7 @@ if (localPropertiesFile.exists()) {
 }
 
 group = "com.inputspark"
-version = "1.4.0"
+version = "1.5.0"
 
 repositories {
     mavenCentral()
@@ -39,13 +39,12 @@ intellijPlatform {
         
         // 插件更新日志（用于 JetBrains Marketplace）
         changeNotes = """
-            <h2>Version 1.4.0</h2>
+            <h2>Version 1.5.0</h2>
             <ul>
-                <li>✨ <strong>新增气泡提示开关</strong>：支持在设置页中一键关闭输入法切换气泡提示</li>
-                <li>🐛 <strong>修复拖拽多选误触发</strong>：鼠标拖拽或 Shift 扩选代码时，不再误触发输入法切换导致 IDEA 搜索弹出</li>
-                <li>🔧 <strong>优化启动期监听</strong>：构建与无头环境下跳过编辑器监听初始化，降低启动期副作用</li>
-                <li>🚀 <strong>放开 IDE 版本上限</strong>：移除 until-build 限制，支持在更新分支的 IntelliJ IDEA 中安装使用</li>
-                <li>🛠 <strong>优化构建流程</strong>：禁用易导致构建失败的 searchable options 生成步骤，提升打包稳定性</li>
+                <li>✨ <strong>新增切换热键配置</strong>：支持在设置页中录入或一键选择中英文切换按键，兼容单键与组合键</li>
+                <li>🛠 <strong>修复 Space 组合键录入</strong>：支持正确读取 Ctrl+Space、Shift+Space 等包含 Space 的快捷键</li>
+                <li>🎛 <strong>新增常用快捷配置按钮</strong>：支持一键选择 Shift、Ctrl+Space、Ctrl+Shift、Ctrl 等常用方案</li>
+                <li>🔔 <strong>新增失败引导提示</strong>：当输入法切换未生效时，在右下角提醒用户检查切换热键配置</li>
             </ul>
         """.trimIndent()
     }

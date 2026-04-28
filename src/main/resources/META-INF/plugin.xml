@@ -12,19 +12,18 @@
     - 代码区域：自动切换为英文输入，专注于代码编写<br>
     - 注释区域：进入 // 或 /* */ 注释时，自动切换为中文输入<br>
     - Git 提交信息：在编写 Git Commit Message 时自动切换为中文<br>
-    - 字符串字面量：可配置是否在字符串中自动切换（默认英文）<br>
-    - 工具窗口：智能识别终端、项目视图等工具窗口，避免误切换<br>
+    - 字符串字面量：可配置是否在字符串中自动切换，默认关闭<br>
+    - 工具窗口：对终端、项目视图等非代码编辑区域优先避免误切换到中文<br>
     - 应用窗口监听：离开 IDE 时自动切换至中文，返回时恢复英文<br>
-    - 编辑器焦点追踪：识别"在 IDE 内但不在编辑器"场景<br>
-    - 无感切换：使用底层 Windows API (IMM32) 检测输入法状态，仅在必要时切换<br>
+    - 无感切换：使用底层 Windows API (IMM32) 检测输入法状态，并在目标状态不一致时模拟配置热键切换<br>
     - 防抖动设计：100ms 智能防抖，减少 50% 无效切换操作<br>
-    - 可视化反馈：切换成功时提供轻量的气泡提示，且支持在设置页中一键关闭<br>
+    - 热键可配置：支持按系统实际设置自定义中英文切换按键，兼容单键、组合键与常用快捷配置按钮<br>
+    - 可视化反馈：切换成功时提供轻量的气泡提示，切换失败时提供配置引导提醒<br>
     <br>
-    <strong>Version 1.4.0 更新：</strong><br>
-    - ✨ 新增气泡提示开关：支持关闭输入法切换气泡提示<br>
-    - 🐛 修复拖拽多选误触发：避免多选代码时误触发 IDEA 搜索<br>
-    - 🔧 优化启动期监听：构建与无头环境下跳过无关初始化<br>
-    - 🚀 放开 IDE 版本上限：支持在更新分支的 IntelliJ IDEA 中安装使用<br>
+    <strong>Version 1.5.0 更新：</strong><br>
+    - ✨ 新增切换热键配置：支持在设置页中录入或一键选择中英文切换按键，兼容 Shift、Ctrl+Space、Ctrl+Shift、Ctrl 等常用方案<br>
+    - 🛠 修复 Space 组合键录入：补齐 Ctrl+Space 等包含 Space 的快捷键捕获链路<br>
+    - 🔔 新增失败引导提示：当输入法切换未生效时，在右下角提醒用户检查切换热键配置<br>
     <br>
     注意：当前版本主要针对 Windows 10/11 系统的微软拼音输入法进行了深度优化。<br>
     <br>
@@ -58,13 +57,4 @@
     <applicationListeners>
         <listener class="com.inputspark.ui.InputSparkAppLifecycleListener" topic="com.intellij.ide.AppLifecycleListener"/>
     </applicationListeners>
-
-    <actions>
-        <action id="com.inputspark.actions.TestToggleAction" 
-                class="com.inputspark.actions.TestToggleAction" 
-                text="Test InputSpark" 
-                description="Check if InputSpark is alive">
-            <add-to-group group-id="ToolsMenu" anchor="last"/>
-        </action>
-    </actions>
 </idea-plugin>

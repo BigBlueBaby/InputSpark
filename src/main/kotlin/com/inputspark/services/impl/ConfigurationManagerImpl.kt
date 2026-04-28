@@ -4,6 +4,7 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.components.Service
+import com.inputspark.core.windows.InputMethodToggleHotkeyParser
 import com.inputspark.model.CustomRule
 import com.inputspark.model.InputMethodType
 import com.inputspark.model.PluginConfig
@@ -33,6 +34,9 @@ class ConfigurationManagerImpl : ConfigurationManager, PersistentStateComponent<
 
     override fun loadState(state: PluginConfig) {
         // XML反序列化时可能会丢失默认值，这里做安全合并或直接使用
+        if (state.toggleHotkey.isBlank()) {
+            state.toggleHotkey = InputMethodToggleHotkeyParser.DEFAULT_HOTKEY_TEXT
+        }
         this.config = state
     }
 

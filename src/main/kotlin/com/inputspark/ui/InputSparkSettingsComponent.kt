@@ -2,11 +2,15 @@ package com.inputspark.ui
 
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBPanel
 import com.intellij.util.ui.FormBuilder
 import com.intellij.ui.components.JBTextField
+import com.inputspark.core.windows.InputMethodToggleHotkeyParser
 import java.awt.Color
+import java.awt.FlowLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.JButton
 import javax.swing.JColorChooser
 import javax.swing.JPanel
 import javax.swing.border.LineBorder
@@ -22,6 +26,10 @@ class InputSparkSettingsComponent {
     val panel: JPanel
     val enabledCheckBox = JBCheckBox("启用 InputSpark 插件")
     val showBalloonTipCheckBox = JBCheckBox("显示输入法切换气泡提示")
+    val toggleHotkeyLabel = JBLabel("中英文切换按键:")
+    val toggleHotkeyField = InputMethodHotkeyField(18)
+    val toggleHotkeyHintLabel = JBLabel("点击输入框后直接按下快捷键，常用配置 Shift、Ctrl+Space、Ctrl+Shift、 Ctrl")
+    val toggleHotkeyPresetPanel = JBPanel<JBPanel<*>>(FlowLayout(FlowLayout.LEFT, 8, 0))
     val defaultSceneCheckBox = JBCheckBox("默认场景（代码区域）自动切换为英文")
     val commentSceneCheckBox = JBCheckBox("注释场景自动切换为中文")
     val stringLiteralSceneCheckBox = JBCheckBox("字符串字面量场景自动切换")
@@ -44,10 +52,14 @@ class InputSparkSettingsComponent {
         // 设置颜色选择器点击事件
         setupColorPicker(englishColorPreview, englishColorField)
         setupColorPicker(chineseColorPreview, chineseColorField)
+        setupHotkeyPresetButtons()
         
         panel = FormBuilder.createFormBuilder()
             .addComponent(enabledCheckBox)
             .addComponent(showBalloonTipCheckBox)
+            .addLabeledComponent(toggleHotkeyLabel, toggleHotkeyField)
+            .addComponent(toggleHotkeyHintLabel)
+            .addComponent(toggleHotkeyPresetPanel)
             .addSeparator()
             .addComponent(JBLabel("场景开关配置:"))
             .addComponent(defaultSceneCheckBox)
@@ -106,6 +118,30 @@ class InputSparkSettingsComponent {
             }
         })
     }
+
+    /**
+     * 设置常用热键快捷配置按钮
+     */
+    private fun setupHotkeyPresetButtons() {
+        toggleHotkeyPresetPanel.removeAll()
+        toggleHotkeyPresetPanel.add(createHotkeyPresetButton("Shift", "Shift"))
+        toggleHotkeyPresetPanel.add(createHotkeyPresetButton("Ctrl+Space", "Ctrl + Space"))
+        toggleHotkeyPresetPanel.add(createHotkeyPresetButton("Ctrl+Shift", "Ctrl + Shift"))
+        toggleHotkeyPresetPanel.add(createHotkeyPresetButton("Ctrl", "Ctrl"))
+    }
+
+    /**
+     * 创建常用热键配置按钮
+     */
+    private fun createHotkeyPresetButton(buttonText: String, hotkeyText: String): JButton {
+        val presetButton = JButton(buttonText)
+        presetButton.addActionListener {
+            toggleHotkeyField.text = InputMethodToggleHotkeyParser.parse(hotkeyText).displayText
+            toggleHotkeyField.requestFocusInWindow()
+            toggleHotkeyField.selectAll()
+        }
+        return presetButton
+    }
     
     fun getPreferredFocusedComponent() = enabledCheckBox
     
@@ -121,6 +157,10 @@ class InputSparkSettingsComponent {
     var isShowBalloonTipEnabled: Boolean
         get() = showBalloonTipCheckBox.isSelected
         set(value) { showBalloonTipCheckBox.isSelected = value }
+
+    var toggleHotkey: String
+        get() = toggleHotkeyField.text
+        set(value) { toggleHotkeyField.text = value }
         
     var isCommentSceneEnabled: Boolean
         get() = commentSceneCheckBox.isSelected

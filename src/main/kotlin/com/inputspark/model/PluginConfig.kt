@@ -41,6 +41,9 @@ class PluginConfig {
 
     /** 是否显示输入法切换气泡提示 */
     var showBalloonTip: Boolean = true
+
+    /** 中英文切换按键配置，支持单键或组合键，例如 Shift、Ctrl+Space */
+    var toggleHotkey: String = "Shift"
     
     /** 创建时间 (时间戳) */
     var createdAt: Long = System.currentTimeMillis()
