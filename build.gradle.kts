@@ -14,7 +14,7 @@ if (localPropertiesFile.exists()) {
 }
 
 group = "com.inputspark"
-version = "1.5.0"
+version = "1.5.1"
 
 repositories {
     mavenCentral()
@@ -39,12 +39,11 @@ intellijPlatform {
         
         // 插件更新日志（用于 JetBrains Marketplace）
         changeNotes = """
-            <h2>Version 1.5.0</h2>
+            <h2>Version 1.5.1</h2>
             <ul>
-                <li>✨ <strong>新增切换热键配置</strong>：支持在设置页中录入或一键选择中英文切换按键，兼容单键与组合键</li>
-                <li>🛠 <strong>修复 Space 组合键录入</strong>：支持正确读取 Ctrl+Space、Shift+Space 等包含 Space 的快捷键</li>
-                <li>🎛 <strong>新增常用快捷配置按钮</strong>：支持一键选择 Shift、Ctrl+Space、Ctrl+Shift、Ctrl 等常用方案</li>
-                <li>🔔 <strong>新增失败引导提示</strong>：当输入法切换未生效时，在右下角提醒用户检查切换热键配置</li>
+                <li>🛠 <strong>修复 ALT+TAB 误触发切换</strong>：避免在 IDEA 窗口来回切换时误按中英文切换热键</li>
+                <li>🔔 <strong>修复错误失败提示</strong>：避免窗口激活阶段因焦点未稳定而弹出“切换到英文失败”提醒</li>
+                <li>⚙ <strong>优化输入法恢复策略</strong>：IDE 重新激活后按真实编辑器上下文恢复输入法，不再一律强制切回英文</li>
             </ul>
         """.trimIndent()
     }
